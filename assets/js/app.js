@@ -2,7 +2,21 @@ let cl = console.log;
 
 const spinner = document.getElementById("spinner");
 const movieInfo = document.getElementById('movieInfo');
-const movieForm = document.getElementById("movieForm")
+const movieForm = document.getElementById("movieForm");
+const movieNameControl = document.getElementById("movieName");
+const genreControl = document.getElementById("genre")
+const releaseDateControl = document.getElementById("releaseDate")
+const movieImgControl = document.getElementById("movieImg")
+const movieDescriptionControl = document.getElementById("movieDescription")
+const movieRatingControl = document.getElementById('movieRating');
+const addBtn = document.getElementById('addBtn');
+const closeIcon = document.getElementById('closeIcon');
+const closeBtn = document.getElementById("closeBtn")
+const backDrop = document.getElementById("backDrop");
+const movieModel = document.getElementById('movieModel');
+
+
+
 
 let BASE_URL =
   "https://fetch-api-crud-c0cc4-default-rtdb.asia-southeast1.firebasedatabase.app";
@@ -40,6 +54,15 @@ function setRating(){
         return "badge-danger"
     }
 }
+
+
+//backdropandmovieModel
+function onMovieModelAndBackdrop(){
+  movieModel.classList.toggle("active");
+  backDrop.classList.toggle("active");
+  movieForm.reset()
+}
+
 
 
 //generic function
@@ -136,4 +159,80 @@ showUi();
 
 
 
+//create
+function onAddMovie(eve){
+    eve.preventDefault();
+    let newMovieObj ={
+        movieName : movieNameControl.value,
+        genre : genreControl.value,
+        releasDate : releaseDateControl.value,
+        movieImg : movieImgControl.value,
+        movieRating : movieRatingControl.value,
+        movieDescription : movieDescriptionControl.value
+    }
+    showHideSpinner()
+    makeApiCall(MOVIE_URL, "POST", newMovieObj)
+    .then((data)=>{
+      cl(data)
+      newMovieObj.id = data.name;
+      state.movieArr2.push(newMovieObj);
+      let div = document.createElement("div");
+      div.id = newMovieObj.id;
+      div.className = `col-md-3`;
+      div.innerHTML = `<div class="card movieCard">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-10">
+                        <h3 class="m-0">${newMovieObj.movieName}</h3>
+                        <small class="releaseDate">Release Date:${newMovieObj.releasDate}</small><br>
+                        <small class="updatedAt">Updated At:345435</small>
+                    </div>
+                    <div class="col-2">
+                        <h4 class="m-0"><span class="badge ${setRating(newMovieObj.movieRating)}">${newMovieObj.movieRating}</span></h4>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+              <figure>
+                <img
+                  src="${newMovieObj.movieImg}"
+                  alt=""
+                />
+                <figcaption>
+                  <h3 class="m-0">${newMovieObj.movieName}</h3>
+                  <strong>Genre : ${newMovieObj.genre}</strong>
+                  <p class="m-0">
+                    ${newMovieObj.movieDescription}
+                  </p>
+                </figcaption>
+              </figure>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+              <button class="btn btn-sm netflix-pri-Color">Edit</button>
+              <button class="btn btn-sm netflix-sec-color">Delete</button>
+            </div>
+          </div>`
+          movieInfo.append(div);                  
+    })
+    .catch((err)=>{
+      snakBar("Something went wrong")
+    })
+}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+movieForm.addEventListener("submit", onAddMovie)
+addBtn.addEventListener("click", onMovieModelAndBackdrop);
+closeBtn.addEventListener("click", onMovieModelAndBackdrop);
+closeIcon.addEventListener("click", onMovieModelAndBackdrop);
