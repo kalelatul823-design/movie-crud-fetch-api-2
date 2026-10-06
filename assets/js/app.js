@@ -14,7 +14,8 @@ const closeIcon = document.getElementById('closeIcon');
 const closeBtn = document.getElementById("closeBtn")
 const backDrop = document.getElementById("backDrop");
 const movieModel = document.getElementById('movieModel');
-
+const submitBtn = document.getElementById("submitBtn");
+const updateBtn = document.getElementById('updateBtn')
 
 
 
@@ -61,6 +62,10 @@ function onMovieModelAndBackdrop(){
   movieModel.classList.toggle("active");
   backDrop.classList.toggle("active");
   movieForm.reset()
+  if(!movieModel.classList.contains("active")){
+     submitBtn.classList.remove("d-none");
+     updateBtn.classList.add("d-none")
+  }
 }
 
 
@@ -116,7 +121,7 @@ function showUi() {
 function templetingUi(arr){
     let result = "";
     arr.forEach((ele)=>{
-        result += ` <div class="col-md-3">
+        result += ` <div class="col-md-3" id=${ele.id}>
           <div class="card movieCard">
             <div class="card-header">
                 <div class="row">
@@ -146,7 +151,7 @@ function templetingUi(arr){
               </figure>
             </div>
             <div class="card-footer d-flex justify-content-between">
-              <button class="btn btn-sm netflix-pri-Color">Edit</button>
+              <button onclick="onEdit(this)" class="btn btn-sm netflix-pri-Color">Edit</button>
               <button class="btn btn-sm netflix-sec-color">Delete</button>
             </div>
           </div>
@@ -208,7 +213,7 @@ function onAddMovie(eve){
               </figure>
             </div>
             <div class="card-footer d-flex justify-content-between">
-              <button class="btn btn-sm netflix-pri-Color">Edit</button>
+              <button onclick="onEdit(this)" class="btn btn-sm netflix-pri-Color">Edit</button>
               <button class="btn btn-sm netflix-sec-color">Delete</button>
             </div>
           </div>`
@@ -221,7 +226,22 @@ function onAddMovie(eve){
 
 
 
-
+//edit 
+function onEdit(ele){
+  let editId = ele.closest(".col-md-3").id
+  state.editId = editId;
+  onMovieModelAndBackdrop()
+  let editObj = state.movieArr2.find((ele)=> ele.id === editId);
+  movieNameControl.value = editObj.movieName;
+  genreControl.value = editObj.genre;
+  releaseDateControl.value = editObj.releasDate;
+  movieImgControl.value = editObj.movieImg;
+  movieDescriptionControl.value = editObj.movieDescription;
+  movieRatingControl.value = editObj.movieRating;
+  
+  submitBtn.classList.add("d-none");
+  updateBtn.classList.remove("d-none")
+}
 
 
 
@@ -236,3 +256,4 @@ movieForm.addEventListener("submit", onAddMovie)
 addBtn.addEventListener("click", onMovieModelAndBackdrop);
 closeBtn.addEventListener("click", onMovieModelAndBackdrop);
 closeIcon.addEventListener("click", onMovieModelAndBackdrop);
+backDrop.addEventListener("click", onMovieModelAndBackdrop);
