@@ -46,13 +46,13 @@ function showHideSpinner() {
 
 
 //rating
-function setRating(){
-    if(5 && 4){
-        return "badge-success"
-    }else if( 2 && 3){
-        return "badge-warning"
-    }else{
-        return "badge-danger"
+function setRating(rating) {
+    if (rating == 5 || rating == 4) {
+        return "badge-success";
+    } else if (rating == 2 || rating == 3) {
+        return "badge-warning";
+    } else {
+        return "badge-danger";
     }
 }
 
@@ -66,6 +66,14 @@ function onMovieModelAndBackdrop(){
      submitBtn.classList.remove("d-none");
      updateBtn.classList.add("d-none")
   }
+}
+
+
+//showUpdateSmallElement
+function showUpdateSmallElement(updateId){
+  let col = document.getElementById(updateId);
+  let smallElement = col.querySelector(".updatedAt");
+  smallElement.classList.remove("d-none")
 }
 
 
@@ -104,9 +112,9 @@ function showUi() {
        let arr = Object.entries(data);
        let arr2 = arr.map(ele=> {
         return ({...ele[1], id:ele[0]})
-    })
-    
-    state.movieArr2 = arr2;
+      })
+      
+      state.movieArr2 = arr2;
       templetingUi(state.movieArr2)
 
     })
@@ -122,13 +130,13 @@ function templetingUi(arr){
     let result = "";
     arr.forEach((ele)=>{
         result += ` <div class="col-md-3" id=${ele.id}>
-          <div class="card movieCard">
+          <div class="card movieCard h-100">
             <div class="card-header">
                 <div class="row">
                     <div class="col-10">
                         <h3 class="m-0">${ele.movieName}</h3>
                         <small class="releaseDate">Release Date:${ele.releasDate}</small><br>
-                        <small class="updatedAt">Updated At:345435</small>
+                       ${ele.updateAt ? ` <small class="updatedAt">Updated At: ${ele.updateAt}</small>` : ""}
                     </div>
                     <div class="col-2">
                         <h4 class="m-0"><span class="badge ${setRating(ele.movieRating)}">${ele.movieRating}</span></h4>
@@ -173,7 +181,8 @@ function onAddMovie(eve){
         releasDate : releaseDateControl.value,
         movieImg : movieImgControl.value,
         movieRating : movieRatingControl.value,
-        movieDescription : movieDescriptionControl.value
+        movieDescription : movieDescriptionControl.value,
+        updateAt : null,
     }
     showHideSpinner()
     makeApiCall(MOVIE_URL, "POST", newMovieObj)
@@ -184,13 +193,13 @@ function onAddMovie(eve){
       let div = document.createElement("div");
       div.id = newMovieObj.id;
       div.className = `col-md-3`;
-      div.innerHTML = `<div class="card movieCard">
+      div.innerHTML = `<div class="card movieCard h-100">
             <div class="card-header">
                 <div class="row">
                     <div class="col-10">
                         <h3 class="m-0">${newMovieObj.movieName}</h3>
                         <small class="releaseDate">Release Date:${newMovieObj.releasDate}</small><br>
-                        <small class="updatedAt">Updated At:345435</small>
+                        <small class="updatedAt d-none">Updated At:345435</small>
                     </div>
                     <div class="col-2">
                         <h4 class="m-0"><span class="badge ${setRating(newMovieObj.movieRating)}">${newMovieObj.movieRating}</span></h4>
@@ -217,7 +226,8 @@ function onAddMovie(eve){
               <button class="btn btn-sm netflix-sec-color">Delete</button>
             </div>
           </div>`
-          movieInfo.append(div);                  
+          movieInfo.append(div);    
+          onMovieModelAndBackdrop()              
     })
     .catch((err)=>{
       snakBar("Something went wrong")
@@ -244,7 +254,71 @@ function onEdit(ele){
 }
 
 
+//update
+function onUpdateMovie(eve){
+  let updateId = state.editId;
+  let UPDATE_URL = `${BASE_URL}/movies2/${updateId}.json`;
+  showUpdateSmallElement(updateId)
+  let updateObj = {
+        movieName : movieNameControl.value,
+        genre : genreControl.value,
+        releasDate : releaseDateControl.value,
+        movieImg : movieImgControl.value,
+        movieRating : movieRatingControl.value,
+        movieDescription : movieDescriptionControl.value,
+        updateAt : new Date().toLocaleString(),
+        id : updateId,
+  }
+  showHideSpinner()
+  makeApiCall(UPDATE_URL, "PATCH", updateObj)
+  .then((data)=>{
+    cl(data);
 
+    let getIndex = state.movieArr2.findIndex(ele => ele.id === updateId);
+    state.movieArr2[getIndex] = updateObj;
+
+    let div = document.getElementById(updateId);
+    div.innerHTML = `<div class="card movieCard h-100">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-10">
+                        <h3 class="m-0">${updateObj.movieName}</h3>
+                        <small class="releaseDate">Release Date:${updateObj.releasDate}</small><br>
+                        <small class="updatedAt d-none">Updated At: ${updateObj.updateAt}</small>
+                    </div>
+                    <div class="col-2">
+                        <h4 class="m-0"><span class="badge ${setRating(updateObj.movieRating)}">${updateObj.movieRating}</span></h4>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+              <figure>
+                <img
+                  src="${updateObj.movieImg}"
+                  alt=""
+                />
+                <figcaption>
+                  <h3 class="m-0">${updateObj.movieName}</h3>
+                  <strong>Genre : ${updateObj.genre}</strong>
+                  <p class="m-0">
+                    ${updateObj.movieDescription}
+                  </p>
+                </figcaption>
+              </figure>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+              <button onclick="onEdit(this)" class="btn btn-sm netflix-pri-Color">Edit</button>
+              <button class="btn btn-sm netflix-sec-color">Delete</button>
+            </div>
+          </div>`
+          onMovieModelAndBackdrop();
+          state.editId = null;
+          showUpdateSmallElement(updateId);
+  })
+  .catch((err)=>{
+    snakBar("Something went wrong")
+  })
+}
 
 
 
@@ -257,3 +331,4 @@ addBtn.addEventListener("click", onMovieModelAndBackdrop);
 closeBtn.addEventListener("click", onMovieModelAndBackdrop);
 closeIcon.addEventListener("click", onMovieModelAndBackdrop);
 backDrop.addEventListener("click", onMovieModelAndBackdrop);
+updateBtn.addEventListener("click", onUpdateMovie)
